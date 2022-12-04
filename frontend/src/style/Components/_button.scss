@@ -1,0 +1,54 @@
+.button{
+        text-transform: uppercase;
+        text-decoration: none;
+        padding: 1.3rem 4rem;
+        display: inline-block;
+        border-radius: .8rem;
+        width: 100%;
+        position: relative;
+        font-size: $default-font-size;
+        font-weight: 600;
+
+        border: none;
+        cursor: pointer;
+    
+    &--white {
+        background-color: $color-white;
+        color: $primary-color;
+    }
+
+    &--red{
+        background-color: $primary-color;
+        color: $color-white;
+    }
+
+    &--green{
+        background-color: $success-color;
+        color: $color-white;
+        width: fit-content;
+        align-self: center;
+    }
+
+    &--link{
+        background-color: transparent;
+        // text-shadow: rgba(0, 0, 0, 0.1) 0px 10px 50px;
+        text-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        // text-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+        padding: 5px;
+        i{
+          color: $primary-color;  
+          font-size: 16px;
+        }
+
+        &:disabled{
+            i{
+                opacity: .6;
+            }
+        }
+    }
+
+    &:disabled{
+        opacity: .6;
+        cursor:default;
+    }
+}
