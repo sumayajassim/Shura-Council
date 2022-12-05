@@ -24,24 +24,42 @@ function getAllRequests(req, res){
 
 function newRequest(req, res){
     const user = jwt_decode(req.headers.authorization)
-    let query = `INSERT INTO requests(managerID, employeeID, type, startDate, endDate, numOfDays, status) VALUES
-        ('${req.body.managerID}',
-        '${user.user.id}',
-        '${req.body.type}',
-        '${req.body.startDate}',
-        '${req.body.endDate}',
-        '${req.body.numOfDays}',
-        '${req.body.status}')`;
-        try{
-            connection.query(query, function (err, results, fields){
-                if(err){
-                    return res.json(err);
+    const getRequests = `SELECT COUNT(*) as total FROM requests WHERE employeeID = '${user.user.id}' AND (startDate  between '${req.body.startDate}' AND '${req.body.endDate}') OR (endDate  between '${req.body.startDate}' AND '${req.body.endDate}') OR (startDate <= '${req.body.startDate}' AND endDate >= '${req.body.endDate}')`
+    try{
+        connection.query(getRequests, function (err, results, fields){
+            console.log(results);
+            // res.send(results);
+            if(results[0].total > 0){
+                // res.send(results.total)
+                res.status(400)
+                return res.send('You already have a request in this duration')
+            }else{
+                let mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+                let query = `INSERT INTO requests(managerID, employeeID, type, startDate, endDate, numOfDays, status, createdAt) VALUES
+                    ('${req.body.managerID}',
+                    '${user.user.id}',
+                    '${req.body.type}',
+                    '${req.body.startDate}',
+                    '${req.body.endDate}',
+                    '${req.body.numOfDays}',
+                    '${req.body.status}', 
+                    '${mysqlTimestamp}')`;
+                try{
+                    connection.query(query, function (err, results, fields){
+                        if(err){
+                            return res.json(err);
+                        }
+                        return res.send('Your request has been sent successfully!')
+                    });
+                }catch (err){
+                    return res.json(err)
                 }
-                res.send('Your request has been sent successfully!')
-            });
-        }catch (err){
-            res.json(err)
-        }
+            }
+        })
+
+    } catch (err){
+        console.log(err);
+    }
         
 }
 
@@ -52,14 +70,14 @@ function getEmployeeRequests(req, res){
 }
 
 function getRequestByID(req, res){
-    let query = `SELECT employees.Fname , employees.Lname, employees.numOfLeaves ,requests.id,  requests.startDate , requests.endDate , requests.numOfDays , requests.type , requests.status  FROM requests
+    let query = `SELECT employees.Fname , employees.Lname, employees.numOfLeaves ,requests.id,  requests.startDate , requests.endDate , requests.numOfDays , requests.type , requests.status FROM requests
     INNER JOIN employees  ON requests.employeeID  = employees.id
     WHERE requests.id  = ${req.params.id}`;
     request(query, req, res);
 }
 
 function getEmployeePrevRequests(req, res){
-    let query = `SELECT employees.Fname , employees.Lname ,requests.id,  requests.startDate , requests.endDate , requests.numOfDays , requests.type , requests.status  FROM requests
+    let query = `SELECT employees.Fname , employees.Lname ,requests.id,  requests.startDate , requests.endDate , requests.numOfDays , requests.type , requests.status, requests.rejectionReason FROM requests
     INNER JOIN employees  ON requests.employeeID  = employees.id
     WHERE requests.id <> ${req.params.id} `;
     request(query, req, res);
@@ -95,22 +113,26 @@ function updateRequest(req, res){
             SELECT email, Fname, Lname FROM employees WHERE role LIKE 'HR';`
             try{
                 connection.query(queries, [0,1,2], function(err, results, fields){
+                    // console.log(results[2].email)/
                     if(req.body.status === 'Approved'){
-                        receivers = [{name: `${result_.Fname} ${result_.Lname}` ,address: result_.email},
-                                        {name: `${results[2].Fname} ${results[2].Lname}` ,address: results[2].email}];
+                        employee = {name: `${result_.Fname} ${result_.Lname}` ,address: result_.email};
+                        let hr = {name: `${results[2][0].Fname} ${results[2][0].Lname}` ,address: results[2][0].email};
                         subject = "Leave request approved";
-                        content = `Dear ${result_.Fname} ${result_.Lname},
-                                    Your leave request from: ${moment(result_.startDate).format('DD-MM-YYYY')} to: ${moment(result_.endDate).format('DD-MM-YYYY')}has been approved!`;
+                        contentEmployee = `Dear ${result_.Fname} ${result_.Lname},\nYour leave request from: ${moment(result_.startDate).format('DD-MM-YYYY')} to: ${moment(result_.endDate).format('DD-MM-YYYY')}  has been approved!\n Regards,`;
 
-                        
+                        contentHR = `Dear ${results[2][0].Fname} ${results[2][0].Lname},\n A leave request has been approved for ${result_.Fname} ${result_.Lname} starting from: ${moment(result_.startDate).format('DD-MM-YYYY')} to: ${moment(result_.endDate).format('DD-MM-YYYY')}\n Regards, `;
+
+                        sendEmail(employee, subject, contentEmployee);
+                        sendEmail(hr, subject, contentHR);
+
                         // let receivers = [{name: results[2].Fname ,address: results[2].email}]
                     }else{
-                        receivers = [{name: `${result_.Fname} ${result_.Lname}` ,address: result_.email}];
+                        employee = {name: `${result_.Fname} ${result_.Lname}` ,address: result_.email};
                         subject = "Leave request rejected";
-                        content = `Dear ${result_.Fname},
-                                    Your leave request has been rejected for this reason: ${reason}.`;
+                        content = `Dear ${result_.Fname},\nYour leave request has been rejected for this reason: ${reason}.`;
+                        sendEmail(employee, subject, content);
                     }
-                    sendEmail(receivers, subject, content);
+                    res.send('Request updated successfuly')
                 })
             }catch (err){
                 res.json(err)
@@ -124,6 +146,7 @@ function updateRequest(req, res){
 }
 
 function sendEmail(receivers, subject , content){
+    console.log('rece', receivers)
     const mailOptions = {
         from: `${process.env.EMAIL}`,
         to: receivers,

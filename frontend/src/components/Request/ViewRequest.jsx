@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Calendar from 'react-calendar';
 import moment from 'moment/moment';
 import RequestsTable from './RequestsTable';
+import { toast } from 'react-toastify';
 
 
 export default function ViewRequest() {
@@ -13,8 +14,8 @@ export default function ViewRequest() {
     const endDate = moment().add(1, 'Y');
     const [show, setShow] = useState(false);
     const [formData, setFormData] = useState({})
+    const navigate = new useNavigate();
     const changeHandler = (e, show_) =>{
-      // e.preventDefault();
       if(show_ !==  undefined){
         setShow(show_)
       }
@@ -48,10 +49,14 @@ export default function ViewRequest() {
 
 
     function confirmHandler(){
-      axios.put(`http://localhost:3306/request/${requestID}`, formData)
-      .then(res => {
-        console.log(res)
-      })
+      if(formData.status === 'Rejected' && !formData.reason ){
+        toast.error('Rejection reason is required!',{autoClose: 1500});
+      }else{
+        axios.put(`http://localhost:3306/request/${requestID}`, formData)
+        .then(res => {
+          navigate('/');
+        })
+      }
     }
 
     
@@ -86,27 +91,27 @@ export default function ViewRequest() {
 
                       <div className='u-margin-top-small grid-item--column'>
                         <div className="u-margin-bottom-small">
-                          <label class="request-status request-status--approve " for="approve">
+                          <label className="request-status request-status--approve " htmlFor="approve">
                             <input type="radio" name="status" id="approve" value={"Approved"} onChange={(e) => changeHandler(e,false)}/>
-                            <div class="request-status__content">
-                              <i class="fa-solid fa-check"></i>
-                              <div class="request-status--text">
+                            <div className="request-status__content">
+                              <i className="fa-solid fa-check"></i>
+                              <div className="request-status--text">
                                 <span>Approve</span>
                               </div>
                             </div>
                           </label>
-                          <label class="request-status request-status--reject" for="reject">
+                          <label className="request-status request-status--reject" htmlFor="reject">
                             <input type="radio" name="status" id="reject" value={"Rejected"}  onChange={(e) => changeHandler(e, true)}/>
-                            <div class="request-status__content">
-                            <i class="fa-solid fa-ban"></i>
-                              <div class="request-status--text">
+                            <div className="request-status__content">
+                            <i className="fa-solid fa-ban"></i>
+                              <div className="request-status--text">
                                 <span>Reject</span>
                               </div>
                             </div>
                           </label>
                         </div>
                         {show && <textarea name="reason" onChange={(e)=> changeHandler(e)} placeholder='Reason of rejection' className='u-margin-bottom-small reason-textarea' value={formData.reason} cols="30" rows="4"></textarea>}
-                        <button type='submit' className='button button--green'> Confirm </button>
+                        <button type='submit' className='button button--green' onClick={confirmHandler} disabled={!formData.status}> Confirm </button>
                       </div>
                     </div>
                     <div className='grid-item'>
@@ -119,7 +124,7 @@ export default function ViewRequest() {
                     </div>
                 </div>
                 </>
-            } 
+              } 
         </div>
     </div>
   )

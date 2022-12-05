@@ -12,7 +12,7 @@ export default function Navbar(props) {
                 <Link className="navbar-href" to='/'><img src="https://www.shura.bh/Style%20Library/Images/ShuraArabicLogo.png" alt="logo"/></Link>
               </li>
               <li className='navbar-li'>
-                <Link className="navbar-href" to='/requests'>Requests</Link>
+                <Link className="navbar-href" to='/'>Requests</Link>
               </li>
             </div>) :
              (
@@ -21,9 +21,10 @@ export default function Navbar(props) {
               </div>
              )}
             <div>
+            {props.user.role === "Employee" && 
                 <li className='navbar-li'> 
                     <Link className="navbar-href" to='/request/new'>New request</Link>
-                </li>
+                </li>}
                 {props.isAuth? <li className='navbar-li'>Welcome {props.user.Fname}</li> : null}
                 <li className='navbar-li'> 
                     <Link className="navbar-href" href='/login' onClick={props.onLogoutHandler}>Logout</Link>

@@ -4,11 +4,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function NewLeave(props) {
   const [leaveDays, setLeaveDays] = useState(new Date());
   const [range, setRange] = useState({});
   const [validRequest, setValidRequest] = useState(true);
+  const navigate = new useNavigate();
   const user = props.user;
   const endDate = moment().add(1, 'Y');
 
@@ -59,44 +61,45 @@ export default function NewLeave(props) {
     }
     axios.post(`http://localhost:3306/request`, formData, {headers: {Authorization: token}})
       .then(res => {
-        console.log('res', res)
+       toast.success('Your request have been sent successfully!')
+       navigate('/');
       })
       .catch(err =>{
-        toast.error(err.response.data.message);
+        toast.error(err.response.data);
     })
   }
 
   return (
     <div className='page-content'>
       {user.role === 'Employee' &&
-       (<div className='container'>
+       (<div className='container container--align-content-to-left'>
         <h1 className='u-margin-bottom-small'>New Request</h1>
-        <div>
-          <div className='info-container'>
-            <p>You have {user.numOfLeaves} days ✈️ </p>
+        <div className='container--grid'>
+          <div className="grid-item">
+            <Calendar
+              onChange={handleChange}
+              calendarType={'Hebrew'}
+              selectRange={true}
+              view={"month"}
+              minDate={new Date()}
+              maxDate={new Date(endDate)}
+              />
           </div>
-          <p>You Selected - {leaveDays.length > 0 ? leaveDays.length : 0 } days ✈️ </p>
+          <div className='details-container grid-item-'>
+              <div className='info-box'>You have &nbsp; <strong>{user.numOfLeaves}</strong> &nbsp;days ✈️ </div>
+              <div className='info-box'>You Selected - {leaveDays.length > 0 ? leaveDays.length : 0 } days ✈️ </div>
+              <div className='info-box'>Start Date: <strong>&nbsp; {range[0]? (moment(range[0]).format('DD-MM-YYYY')) : ''}</strong></div>
+              <div className='info-box'>End Date: <strong>&nbsp;  {range[1]? (moment(range[1]).format('DD-MM-YYYY')) : ''}</strong></div>
+              <button className='button button--red u-margin-top-medium' disabled={validRequest} onClick={confirmRequest}>Confirm</button>
+          </div>
         </div>
         
         <div>
-          <Calendar 
-          onChange={handleChange}
-          calendarType={'Hebrew'}
-          selectRange={true}
-          view={["month"]}
-          minDate={new Date()}
-          maxDate={new Date(endDate)}
-          />
+         
+    
+          {/* <div className="dates-container u-margin-bottom-small">
           
-          <div className="dates-container u-margin-bottom-small">
-            <div className='date'>
-                <span>Start Date: <br/> {range[0]? (moment(range[0]).format('DD-MM-YYYY')) : ''}</span>
-            </div>
-            <div className='date'>
-              <span>End Date: <br/> {range[1]? (moment(range[1]).format('DD-MM-YYYY')) : ''}</span>
-            </div>
-          <button className='button button--red u-margin-top-medium' disabled={validRequest} onClick={confirmRequest}>Confirm</button>
-          </div>
+          </div> */}
         </div>
       </div>)}
     </div>

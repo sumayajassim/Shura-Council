@@ -69,7 +69,6 @@ function App() {
       setIsAuth(false);
       setUser(null);
       toast('You are logged out successfully!',{
-        position: "top-right"
       })
       window.location.replace("/login")
     }
@@ -81,8 +80,11 @@ function App() {
       <Routes>
         <Route path="/" element={isAuth? <Homepage user={user}/> : <Login login={loginHandler}/>} />
         <Route path="/login" element={isAuth? <Homepage user={user}/> : <Login login={loginHandler}/>} />
+        {/* <Route path="/request" element={<Homepage/>} /> */}
         <Route path="/request/new" element={isAuth? <NewRequest user={user}/> : <Login login={loginHandler}/>} />        
-        <Route path="/request/:id" element={<ViewRequest/>} />        
+        <Route path="/request/:id" element={<ViewRequest/>} />
+          <Route path='*' element={<Login/>} />
+
       </Routes>
       <ToastContainer />
     </div>
