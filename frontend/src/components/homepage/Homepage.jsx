@@ -1,9 +1,6 @@
 import React,{useEffect, useState} from 'react'
-import Calendar from 'react-calendar';
-import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import RequestsTable from '../Request/RequestsTable';
 export default function Homepage(props) {
 
@@ -28,17 +25,9 @@ export default function Homepage(props) {
       }
     }
 
-
   useEffect(() => {
     updateTable()
   },[user])
-
-  const handleRequestClick = (id) =>{
-    // e.preventDefault()
-    console.log('request id', id)
-    // navigate(`/food/${id}/details`);
-    
-  }
 
   return (
     <div className='page-content'>

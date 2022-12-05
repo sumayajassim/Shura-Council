@@ -45,7 +45,7 @@ export default function ViewRequest() {
           .catch(err => {
             console.log(err)
         })
-    },[])
+    },[requestID])
 
 
     function confirmHandler(){
@@ -65,7 +65,7 @@ export default function ViewRequest() {
     <div className='page-content'>
         <div className='container container--align-content-to-left'>
             {request &&<>
-                <h3>Request sent by: <strong>&nbsp; {request.Fname} {request.Lname}</strong></h3>
+                <h3>Request sent by: <strong>&nbsp; `${request.Fname} ${request.Lname}`</strong></h3>
                 <div className='container--grid'>
                     <div className='grid-item'>
                       <Calendar

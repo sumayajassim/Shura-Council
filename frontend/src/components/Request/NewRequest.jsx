@@ -1,6 +1,6 @@
 import React,{useEffect, useState} from 'react'
 import Calendar from 'react-calendar';
-import { ToastContainer, toast } from 'react-toastify';
+import {toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
 import axios from 'axios';
@@ -65,6 +65,7 @@ export default function NewLeave(props) {
        navigate('/');
       })
       .catch(err =>{
+        // console.log(err.response.data);
         toast.error(err.response.data);
     })
   }
