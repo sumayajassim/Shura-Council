@@ -1,2 +1,7 @@
-# shura-council
+# Leave management system
+
+
+## user stories 
+
+Markup:  ### Employee: 
  
